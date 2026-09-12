@@ -1,0 +1,11 @@
+dsh-plugin-memory
+Copyright (c) 2026 hzxwonder
+
+This package is derived from PI-Desktop's pi.memory plugin, authored by
+hzxwonder and distributed as part of PI-Desktop under LGPL-3.0-or-later. The
+derived memory implementation remains LGPL-3.0-or-later while adapting the
+behavior to the DeepSeek Harness public plugin, credential, home-path, and
+atomic-write APIs.
+
+DeepSeek Harness package APIs are Copyright (c) DeepSeek and are used under
+their respective package licenses.
