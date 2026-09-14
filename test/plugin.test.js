@@ -157,6 +157,16 @@ test('a read renders as the Markdown document while mutations stay JSON', async 
   const reread = await tool.execute({ action: 'read' }, exec)
   const [markdown] = tool.output.render({ action: 'read' }, reread)
   assert.ok(markdown.text.endsWith('# Project memory\n\n- durable fact\n'))
+
+  for (const turn of [1, 2]) {
+    await tool.execute({ action: 'observe_process', processId: 'probe run' }, f.execution(f.projectA, { turn }))
+  }
+  const due = await tool.execute({ action: 'read' }, f.execution(f.projectA))
+  const [withMaintenance] = tool.output.render({ action: 'read' }, due)
+  assert.match(
+    withMaintenance.text,
+    new RegExp(`\\nmaintenance revision: ${due.maintenance.revision}\\npending processes: "probe run"\\n\\n# Project memory`),
+  )
 })
 
 test('process observation requires an open host turn projection', async t => {
