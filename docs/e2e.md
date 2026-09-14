@@ -62,3 +62,25 @@ contracts; release validation should also execute these user-path scenarios.
 4. Confirm `memory.read` and `secret_status` remain available.
 5. Switch the Session to `workspace-write` and confirm the four mutations can
    proceed subject to their normal validation and CAS requirements.
+
+## E2E-MEM-07: Prompt-driven automatic use
+
+1. Start DSH with the bundle and confirm a fresh Session's system prompt
+   contains the standing `tool:memory` policy: it must name reading before
+   relying on stored facts, writing durable facts, correcting or deleting stale
+   lines, keeping credentials out of the document, and documenting a procedure
+   observed in two distinct turns.
+2. In a project with no memory, confirm the model step's runtime context
+   contributes nothing about memory.
+3. Have the agent record one durable fact without being told to; confirm a later
+   step's runtime context reports the document revision and size and does not
+   repeat its content.
+4. Ask the agent, in plain conversation, to forget that fact or to remember a
+   replacement; confirm it acts in the same turn without any wake-up phrase.
+5. Complete one repeated procedure in two distinct turns and confirm the next
+   step's runtime context names the pending process ID together with the
+   knowledge revision, the maintenance revision, and the acknowledgements.
+6. Let the agent document the steps under `## Procedures`; confirm the
+   maintenance directive disappears from the following step's context.
+7. Boot a host without the `systemPrompt` service and confirm both tools still
+   register and work.

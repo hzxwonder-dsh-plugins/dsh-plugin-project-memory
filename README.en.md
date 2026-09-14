@@ -1,38 +1,64 @@
 # DSH Memory Plugin
 
 `dsh-plugin-memory` provides project-scoped durable knowledge and write-only,
-non-retrievable credential status tools for DeepSeek Harness. It is an ESM
-Cordis plugin targeting Harness `0.1.5-rc.2`.
+non-retrievable credential status tools for DeepSeek Harness. It also injects
+the memory usage policy and the current project state into the system prompt so
+the agent decides on its own when to read or write, and is prompted to maintain
+procedures that repeat. It is an ESM Cordis plugin targeting Harness
+`0.1.5-rc.2`.
 
 ## Verification screenshot
 
 ![Memory plugin test evidence](docs/screenshots/memory-test-output.svg)
 
 Figure: functional verification evidence rendered from the real `npm test`
-output (14 passed, 0 failed), rather than a graphical memory-panel capture.
-See [`docs/screenshots/SOURCES.md`](docs/screenshots/SOURCES.md) for provenance
+output on 2026-09-12 (14 passed, 0 failed at that time), rather than a graphical
+memory-panel capture. Prompt-contribution cases added later are outside that
+figure; the table on this page carries the current counts. See
+[`docs/screenshots/SOURCES.md`](docs/screenshots/SOURCES.md) for provenance
 and validation boundaries.
 
 ## Install
 
-Use the same `DSH_HOME` for installation and every Harness launch:
+One command (replace `web` with your profile name):
 
 ```sh
-export DSH_HOME=/absolute/path/to/your/dsh-home
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory
+```
+
+That single command initializes the profile when it does not exist yet, fetches
+the repository with pnpm, installs its dependencies, and — because the package
+declares `dsh.bundle.patch` in its own `package.json` — adds the plugin to
+`dsh.profile.bundles` automatically, so no manual profile edit is needed. The
+plugin is plain JavaScript with no `prepare` build script, so no `allowBuilds`
+authorization prompt appears either. To pin a version, replace the branch with a
+specific commit (this repository has no tags yet):
+
+```sh
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory#<commit>
+```
+
+Use the same `DSH_HOME` for installation and every Harness launch. The host
+profile must provide `tools`, `credentials`, `sessionProjections`,
+`sandboxPolicy`, and `systemPrompt`. The bundle patch inserts the stable
+`dsh-plugin-memory` entry and does not modify Harness source. Restart `dsh web`
+(or the DSH app) afterwards; the host loads plugins at startup.
+
+Do **not** install the npm package of the same name: `dsh-plugin-memory` is
+already taken by another author's project, so `dsh plugin add dsh-plugin-memory`
+would install something else.
+
+For local development use `file:` instead:
+
+```sh
 git clone https://github.com/hzxwonder-dsh-plugins/dsh-plugin-memory.git
 cd dsh-plugin-memory
 npm ci
-dsh plugin --profile migration add "file:$PWD"
-dsh --profile migration
+dsh plugin --profile web add "file:$PWD"
 ```
 
 Keep the `file:` prefix; a bare path is treated as `link:` by pnpm and does not
 resolve the plugin's declared dependencies.
-
-Replace `migration` in both commands for another profile. The host profile
-must provide `tools`, `credentials`, `sessionProjections`, and
-`sandboxPolicy`. The bundle patch inserts the stable
-`dsh-plugin-memory` entry and does not modify Harness source.
 
 ## Current verification status
 
@@ -40,9 +66,11 @@ Local checks currently report:
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| Unit and integration tests | Pass (14/14) | `npm test` |
+| Unit and integration tests | Pass (18/18) | `npm test` |
 | JavaScript syntax | Pass | `node --check index.js && node --check store.js` |
 | Package contents | Pass | `npm run pack:check` |
+| System prompt contributions | Pass | Assembly through the real `@deepseek-ai/dsh-system-prompt`: the policy section reaches the prompt and the dynamic context reports the project revision and pending processes |
+| One-command install | Pass | `dsh plugin --profile web add github:…` in an isolated `DSH_HOME` initialized the profile, installed the dependencies, and joined `dsh.profile.bundles`; `--dump-config` shows the layer |
 | migration profile loading | Confirmed | `dsh --profile migration --dump-config` |
 | Harness Web startup | Pass | Disposable profile starts and loads the plugins |
 | Real Harness Agent | Pass | Tool registration, memory read/write/CAS rejection, credential write and status-only results; deployment `tests/harness-integration.mjs` |
@@ -74,6 +102,34 @@ A process is counted once per host turn. Two distinct turns observing the same
 process create a pending maintenance item. Acknowledgement must include the
 latest knowledge revision, maintenance revision, and the exact updated process
 IDs together with the complete new document.
+
+## Automatic use (system prompt contributions)
+
+When the `systemPrompt` service is available the plugin contributes two prompt
+inputs, so the user never has to activate memory:
+
+- A static section named `tool:memory` at order `2950` states the standing
+  policy: when reading pays off, what deserves a write, that `write` and
+  `forget` replace the whole document under revision CAS, that stale lines must
+  be corrected or deleted rather than duplicated, that credentials stay out of
+  the document, and that a procedure observed in two distinct turns must be
+  documented. The text is static, which keeps the cached prompt prefix stable.
+- A dynamic context named `memory:project` at order `130` reports the current
+  project on every model step: one line with the documented revision and size,
+  and, when maintenance is due, a directive naming the pending process IDs plus
+  the knowledge revision, maintenance revision and `acknowledgedProcesses` to
+  submit, so the agent can document the steps and clear the pending state
+  immediately.
+
+The agent therefore decides on its own when to read and write: it refreshes or
+deletes stale facts and is prompted to record repeated procedures under a
+`## Procedures` heading. An explicit user request in the conversation ("store
+this in memory", "forget X") is honored in the same turn.
+
+The dynamic context carries revision, size and process IDs only — never
+document content — so knowledge cannot leak into the prompt. It renders an
+empty string when storage is missing, unsafe or unreadable, and it never
+creates a file or directory, so storage errors are not exposed as prompt text.
 
 ## The `memory_credentials` tool
 
@@ -134,6 +190,11 @@ npm run pack:check
 See [`docs/spec.md`](docs/spec.md) for the contract and
 [`docs/e2e.md`](docs/e2e.md) for user-path scenarios. The Chinese primary
 documentation is [`README.md`](README.md).
+
+`test/system-prompt.test.js` assembles a prompt through the real
+`@deepseek-ai/cordis` and `@deepseek-ai/dsh-system-prompt` packages. Those are
+host-provided peers, so the case skips when they are not installed and the
+remaining tests are unaffected.
 
 ## License and provenance
 

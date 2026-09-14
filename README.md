@@ -1,29 +1,41 @@
 # DSH Memory 插件
 
-`dsh-plugin-memory` 为 DeepSeek Harness 提供按项目隔离的持久化知识，以及只写入、不可读取的项目凭据状态工具。它是一个 ESM Cordis 插件，目标运行时为 Harness `0.1.5-rc.2`。
+`dsh-plugin-memory` 为 DeepSeek Harness 提供按项目隔离的持久化知识，以及只写入、不可读取的项目凭据状态工具。它同时把记忆的使用策略和当前项目状态注入 system prompt，让 agent 自行判断何时读写，并自动提示维护重复出现的流程。它是一个 ESM Cordis 插件，目标运行时为 Harness `0.1.5-rc.2`。
 
 ## 功能验证截图
 
 ![memory 插件测试证据](docs/screenshots/memory-test-output.svg)
 
-图：由真实 `npm test` 输出渲染的功能验证证据（14 项通过、0 项失败），不是图形化 memory 面板截屏。来源和验证边界见 [`docs/screenshots/SOURCES.md`](docs/screenshots/SOURCES.md)。
+图：2026-09-12 的真实 `npm test` 输出渲染的功能验证证据（当时 14 项通过、0 项失败），不是图形化 memory 面板截屏；此后新增的提示词注入用例不在此图范围内，当前计数以本页表格为准。来源和验证边界见 [`docs/screenshots/SOURCES.md`](docs/screenshots/SOURCES.md)。
 
 ## 安装
 
-安装和每次启动 Harness 时使用同一个 `DSH_HOME`：
+一行命令（把 `web` 换成你自己的 profile 名）：
 
 ```sh
-export DSH_HOME=/absolute/path/to/your/dsh-home
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory
+```
+
+这一条命令会自己完成安装：profile 不存在时先初始化，然后用 pnpm 拉取仓库并安装依赖，最后因为包在自己的 `package.json` 里声明了 `dsh.bundle.patch`，自动把这个插件加入 `dsh.profile.bundles`，不需要手工编辑 profile。插件是纯 JavaScript、没有 `prepare` 构建脚本，所以也不会出现需要写进 `allowBuilds` 的构建脚本授权提示。需要固定到某个版本时，把分支换成具体的 commit（本仓库目前未打 tag）：
+
+```sh
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory#<commit>
+```
+
+安装与每次启动 Harness 时使用同一个 `DSH_HOME`；宿主 profile 需要提供 `tools`、`credentials`、`sessionProjections`、`sandboxPolicy` 和 `systemPrompt` 服务。插件补丁只插入稳定 id `dsh-plugin-memory`，不会改写 Harness 源码。安装后重启 `dsh web`（或重启 DSH 应用），插件在宿主启动时加载。
+
+**不要**安装 npm 上的同名包：`dsh-plugin-memory` 这个名字已被另一位作者的项目占用，`dsh plugin add dsh-plugin-memory` 装到的不是本仓库。
+
+本地开发时改用 `file:`：
+
+```sh
 git clone https://github.com/hzxwonder-dsh-plugins/dsh-plugin-memory.git
 cd dsh-plugin-memory
 npm ci
-dsh plugin --profile migration add "file:$PWD"
-dsh --profile migration
+dsh plugin --profile web add "file:$PWD"
 ```
 
 请保留 `file:` 前缀；裸路径会被 pnpm 当作 `link:`，不会解析插件声明的依赖。
-
-如使用其他 profile，请在两个 DSH 命令中替换 `migration`。宿主 profile 需要提供 `tools`、`credentials`、`sessionProjections` 和 `sandboxPolicy` 服务。插件补丁只插入稳定 id `dsh-plugin-memory`，不会改写 Harness 源码。
 
 ## 当前验证结论
 
@@ -31,9 +43,11 @@ dsh --profile migration
 
 | 检查 | 结果 | 证据 |
 | --- | --- | --- |
-| 单元和集成测试 | 通过（14/14） | `npm test` |
+| 单元和集成测试 | 通过（18/18） | `npm test` |
 | JavaScript 语法 | 通过 | `node --check index.js && node --check store.js` |
 | 发布包清单 | 通过 | `npm run pack:check` |
+| system prompt 注入 | 通过 | 真实 `@deepseek-ai/dsh-system-prompt` 组装：策略段进入提示词、动态上下文报告项目 revision 与待维护流程 |
+| 一行命令安装 | 通过 | 隔离 `DSH_HOME` 中执行 `dsh plugin --profile web add github:…`：自动初始化 profile、拉取安装依赖并并入 `dsh.profile.bundles`，`--dump-config` 显示该层 |
 | migration profile 加载 | 已确认 | `dsh --profile migration --dump-config` |
 | Harness Web 实际启动 | 通过 | 临时 profile 启动并加载插件 |
 | 真实 Harness Agent | 通过 | 工具注册、记忆读写、CAS 冲突、凭据写入及仅状态返回；部署目录 `tests/harness-integration.mjs` |
@@ -56,6 +70,17 @@ dsh --profile migration
 - `observe_process`：仅在流程及最终检查真实完成后记录一次流程观察。
 
 同一宿主 turn 只计数一次；两个不同 turn 观察到同一流程后，会生成待维护项。确认维护时需要同时提交最新知识 revision、维护 revision、已更新的流程 ID 和完整的新文档。
+
+## 自动使用记忆（system prompt 注入）
+
+插件在 `systemPrompt` 服务可用时注入两份内容，不需要用户主动唤醒记忆功能：
+
+- **静态使用策略**（section `tool:memory`，order `2950`）：告诉 agent 何时该读、什么样的信息值得写、`write`/`forget` 是整篇替换加 revision CAS、过时内容应改写或删除而不是追加重复、凭据不得写入文档，以及「同一流程在两个不同 turn 被观察到就必须补文档」。文本静态，保证系统提示词前缀可缓存。
+- **动态项目状态**（context `memory:project`，order `130`）：每个模型步骤读取当前项目状态。已有文档时给出一行 revision 与大小；出现待维护流程时直接给出维护指令（pending 流程 ID、知识 revision、维护 revision 和需要提交的 `acknowledgedProcesses`），agent 据此立即补写步骤并清除 pending。
+
+因此 agent 会自动决定读写时机：读到相关事实就更新或删除过时内容，重复两次的流程会被提示补写成 `## Procedures`。用户也可以在对话中直接说「请把这条存进 memory」「忘掉某某」，策略要求在同一 turn 内执行。
+
+动态状态只含 revision、大小和流程 ID，**不含文档正文**，因此记忆内容不会泄漏进提示词；它在缺失、异常或超限时返回空字符串，不创建目录、也不写入任何文件，存储错误不会经由提示词暴露。
 
 ## `memory_credentials` 工具
 
@@ -95,6 +120,8 @@ npm install --cache /private/tmp/npm-cache-dsh-migration
 npm test
 npm run pack:check
 ```
+
+`test/system-prompt.test.js` 用真实的 `@deepseek-ai/cordis` 与 `@deepseek-ai/dsh-system-prompt` 组装提示词；这两个包是宿主提供的 peer，未安装时该用例自动跳过，其余用例不受影响。
 
 详细契约见 [`docs/spec.md`](docs/spec.md)，用户路径见 [`docs/e2e.md`](docs/e2e.md)。双语文档见 [`README.en.md`](README.en.md)。
 

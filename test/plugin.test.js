@@ -15,6 +15,7 @@ async function fixture(t) {
   const records = new Map()
   const credentialCalls = []
   const tools = new Map()
+  const prompt = { sections: new Map(), contexts: new Map() }
   const ctx = {
     tools: {
       register(tool) {
@@ -50,6 +51,21 @@ async function fixture(t) {
         }
       },
     },
+    inject(dependencies, callback) {
+      assert.deepEqual(dependencies, ['systemPrompt'])
+      callback({
+        systemPrompt: {
+          section(value) {
+            assert.equal(prompt.sections.has(value.name), false)
+            prompt.sections.set(value.name, value)
+          },
+          context(value) {
+            assert.equal(prompt.contexts.has(value.name), false)
+            prompt.contexts.set(value.name, value)
+          },
+        },
+      })
+    },
   }
   apply(ctx, { dshHome: join(root, 'dsh-home') })
 
@@ -66,7 +82,7 @@ async function fixture(t) {
       signal: signal ?? new AbortController().signal,
     }
   }
-  return { root, projectA, projectB, records, credentialCalls, tools, execution }
+  return { root, projectA, projectB, records, credentialCalls, tools, prompt, execution }
 }
 
 test('bundle exports the DSH Cordis contract and apply registers both defineTool definitions', async t => {
@@ -188,4 +204,77 @@ test('credential validation rejects retrieval-shaped actions, bad names, and inv
     message: 'MEMORY_INVALID_SECRET',
   })
   assert.equal(f.records.size, 0)
+})
+
+test('prompt contributions carry the standing policy and a per-project context', async t => {
+  const f = await fixture(t)
+  assert.deepEqual([...f.prompt.sections.keys()], ['tool:memory'])
+  const section = f.prompt.sections.get('tool:memory')
+  assert.equal(section.order, 2950)
+  assert.equal(typeof section.text, 'string')
+  for (const expected of ['action: read', 'action: write', 'forget', 'observe_process', 'memory_credentials', 'maintenanceRevision']) {
+    assert.match(section.text, new RegExp(expected))
+  }
+  assert.equal(section.complete, undefined)
+
+  assert.deepEqual([...f.prompt.contexts.keys()], ['memory:project'])
+  const context = f.prompt.contexts.get('memory:project')
+  assert.equal(context.order, 130)
+  assert.equal(context.text({}), '')
+  assert.equal(context.text({ agent: { session: {} } }), '')
+  assert.equal(context.text({ agent: { session: { header: { cwd: f.projectA } } } }), '')
+})
+
+test('prompt context reports stored knowledge and escalates twice-observed procedures', async t => {
+  const f = await fixture(t)
+  const context = f.prompt.contexts.get('memory:project')
+  const agent = { agent: { session: { header: { cwd: f.projectA } } } }
+  const memory = f.tools.get('memory')
+
+  const first = await memory.execute({ action: 'read' }, f.execution(f.projectA))
+  await memory.execute(
+    { action: 'write', baseRevision: first.revision, content: '# Project memory\n\n## Facts\n- tests: npm test\n' },
+    f.execution(f.projectA),
+  )
+  const status = context.text(agent)
+  assert.match(status, /holds \d+ bytes at revision [a-f0-9]{64}/)
+  assert.doesNotMatch(status, /Memory maintenance is due/)
+  assert.equal(status.includes('npm test'), false)
+
+  for (const turn of [1, 2]) {
+    await memory.execute(
+      { action: 'observe_process', processId: 'release: publish' },
+      f.execution(f.projectA, { turn }),
+    )
+  }
+  const pending = context.text(agent)
+  assert.match(pending, /Memory maintenance is due/)
+  assert.match(pending, /"release: publish"/)
+
+  const current = await memory.execute({ action: 'read' }, f.execution(f.projectA))
+  assert.deepEqual(current.maintenance.pendingProcesses.map(entry => entry.processId), ['release: publish'])
+  assert.match(pending, new RegExp(current.maintenance.revision))
+
+  await memory.execute({
+    action: 'write',
+    baseRevision: current.revision,
+    content: '# Project memory\n\n## Facts\n- tests: npm test\n\n## Procedures\n1. release: publish\n',
+    maintenanceRevision: current.maintenance.revision,
+    acknowledgedProcesses: ['release: publish'],
+  }, f.execution(f.projectA, { turn: 3 }))
+  const cleared = context.text(agent)
+  assert.doesNotMatch(cleared, /Memory maintenance is due/)
+  assert.match(cleared, /holds \d+ bytes at revision [a-f0-9]{64}/)
+})
+
+test('apply stays usable when the systemPrompt service is absent', () => {
+  const tools = new Map()
+  const ctx = {
+    tools: { register(tool) { tools.set(tool.name, tool) } },
+    credentials: {},
+    sessionProjections: {},
+    sandboxPolicy: {},
+  }
+  assert.doesNotThrow(() => apply(ctx, { dshHome: join(tmpdir(), 'dsh-memory-without-prompt') }))
+  assert.deepEqual([...tools.keys()], ['memory', 'memory_credentials'])
 })

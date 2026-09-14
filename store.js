@@ -6,9 +6,9 @@
  */
 
 import { createHash } from 'node:crypto'
-import { constants } from 'node:fs'
+import { constants, lstatSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { chmod, lstat, mkdir, open, realpath, stat } from 'node:fs/promises'
-import { isAbsolute, join } from 'node:path'
+import { dirname, isAbsolute, join } from 'node:path'
 import { withFileLock, writeFileAtomic } from '@deepseek-ai/dsh-atomic-write'
 import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
 
@@ -203,6 +203,60 @@ export async function canonicalProjectIdentity(cwd, signal) {
   return { root, projectId: digest(root) }
 }
 
+/**
+ * Read one project's prompt-facing state without creating or changing anything.
+ *
+ * The dynamic system-prompt context runs on every model step, so this path is
+ * synchronous and side-effect free: it never creates directories or files,
+ * never returns document content (only size and revision, so knowledge cannot
+ * leak into the prompt), and degrades to `null` on any unsafe or unreadable
+ * input because prompt text must not report storage errors.
+ */
+export function projectMemoryStateSync(dshHome, cwd) {
+  let root
+  let projectId
+  try {
+    if (typeof cwd !== 'string' || !isAbsolute(cwd)) return null
+    root = realpathSync(cwd)
+    if (!statSync(root).isDirectory()) return null
+    projectId = digest(root)
+  } catch {
+    return null
+  }
+  const directory = join(dshHome, 'plugin-data', 'memory', projectId)
+  const memoryFile = join(directory, 'memory.md')
+  let content
+  try {
+    const info = lstatSync(memoryFile)
+    if (!info.isFile() || info.isSymbolicLink() || info.nlink !== 1 || info.size > MAX_MEMORY_BYTES) return null
+    content = readFileSync(memoryFile, 'utf8')
+  } catch {
+    return null
+  }
+  if (content.includes('\0')) return null
+  const trimmed = content.trim()
+  return {
+    projectId,
+    directory,
+    revision: digest(content),
+    bytes: Buffer.byteLength(content),
+    documented: trimmed.length > 0 && trimmed !== INITIAL_MEMORY.trim(),
+    maintenance: readMaintenanceSync(directory),
+  }
+}
+
+/** Best-effort synchronous maintenance view for prompt text; `null` when unusable. */
+function readMaintenanceSync(directory) {
+  try {
+    const target = join(directory, 'processes.json')
+    const info = lstatSync(target)
+    if (!info.isFile() || info.isSymbolicLink() || info.nlink !== 1 || info.size > MAX_MEMORY_BYTES) return null
+    return maintenanceView(parseProcessState(readFileSync(target, 'utf8')))
+  } catch {
+    return null
+  }
+}
+
 export class MemoryStore {
   constructor({ dshHome } = {}) {
     this.dshHome = resolveDshHome(dshHome)
@@ -219,6 +273,11 @@ export class MemoryStore {
 
   async identify(cwd, signal) {
     return canonicalProjectIdentity(cwd, signal)
+  }
+
+  /** Prompt-facing project state for the dynamic system-prompt context. */
+  promptState(cwd) {
+    return projectMemoryStateSync(this.dshHome, cwd)
   }
 
   async #project(cwd, signal) {

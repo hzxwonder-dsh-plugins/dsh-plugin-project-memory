@@ -47,6 +47,30 @@ that revision, include the current knowledge revision, and change the Markdown
 document. It resets only the acknowledged occurrence counters while retaining
 recent hashes. A concurrent observation invalidates the maintenance revision.
 
+## Prompt contract
+
+The plugin contributes to the DSH system prompt through `ctx.inject` when the
+`systemPrompt` service is present; without that service the tools still load
+and no prompt text is added.
+
+- A static section named `tool:memory` at order `2950` carries the standing
+  usage policy: when reading pays off, what deserves a write, that `write` and
+  `forget` replace the whole document with revision CAS, that credentials never
+  belong in the document, and that a procedure observed in two distinct turns
+  must be documented. The text is static so the cached prompt prefix stays
+  stable across steps.
+- A dynamic context named `memory:project` at order `130` carries per-step
+  facts: the documented revision and size, and an explicit maintenance
+  directive naming the pending processes, the knowledge revision, the
+  maintenance revision, and the acknowledgements to submit. It renders to an
+  empty string when a project has no documented memory and no pending process.
+
+The dynamic context never includes document content, and it reads state
+synchronously without creating directories or files. It returns an empty string
+on missing, unsafe, oversized, or unreadable storage because prompt text must
+not report storage errors. At most eight pending process IDs are named; the
+remainder is summarized as a count.
+
 ## Credential contract
 
 `memory_credentials` accepts environment-style names and offers only:
@@ -79,5 +103,6 @@ not initialize ordinary memory storage.
 
 The ESM module exports `name`, `inject`, and `apply`. `apply` registers both
 tools with `ctx.tools.register(defineTool(...))`. It requires the DSH `tools`,
-`credentials`, `sessionProjections`, and `sandboxPolicy` services. Every
-operation checks or forwards `exec.signal` before side effects.
+`credentials`, `sessionProjections`, and `sandboxPolicy` services, and
+optionally contributes prompt sections through the `systemPrompt` service.
+Every operation checks or forwards `exec.signal` before side effects.
