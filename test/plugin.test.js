@@ -135,6 +135,30 @@ test('read-only policy permits reads and denies every memory and credential muta
   assert.equal(f.records.size, 0)
 })
 
+test('a read renders as the Markdown document while mutations stay JSON', async t => {
+  const f = await fixture(t)
+  const tool = f.tools.get('memory')
+  const exec = f.execution(f.projectA)
+  const initial = await tool.execute({ action: 'read' }, exec)
+
+  const [rendered] = tool.output.render({ action: 'read' }, initial)
+  assert.equal(rendered.type, 'text')
+  assert.equal(rendered.text.includes('\\n'), false)
+  assert.match(rendered.text, new RegExp(`^project: ${initial.projectId}\nrevision: ${initial.revision}\ndirectory: `))
+  assert.ok(rendered.text.endsWith(initial.content))
+
+  const written = await tool.execute(
+    { action: 'write', baseRevision: initial.revision, content: '# Project memory\n\n- durable fact\n' },
+    exec,
+  )
+  const [envelope] = tool.output.render({ action: 'write' }, written)
+  assert.deepEqual(JSON.parse(envelope.text), written)
+
+  const reread = await tool.execute({ action: 'read' }, exec)
+  const [markdown] = tool.output.render({ action: 'read' }, reread)
+  assert.ok(markdown.text.endsWith('# Project memory\n\n- durable fact\n'))
+})
+
 test('process observation requires an open host turn projection', async t => {
   const f = await fixture(t)
   const exec = f.execution(f.projectA)

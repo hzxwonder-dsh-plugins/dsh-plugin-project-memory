@@ -19,7 +19,7 @@ dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-mem
 这一条命令会自己完成安装：profile 不存在时先初始化，然后用 pnpm 拉取仓库并安装依赖，最后因为包在自己的 `package.json` 里声明了 `dsh.bundle.patch`，自动把这个插件加入 `dsh.profile.bundles`，不需要手工编辑 profile。插件是纯 JavaScript、没有 `prepare` 构建脚本，所以也不会出现需要写进 `allowBuilds` 的构建脚本授权提示。需要固定版本时改用 tag：
 
 ```sh
-dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory#v0.2.1
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory#v0.2.2
 ```
 
 安装与每次启动 Harness 时使用同一个 `DSH_HOME`；宿主 profile 需要提供 `tools`、`credentials`、`sessionProjections`、`sandboxPolicy` 和 `systemPrompt` 服务。插件补丁只插入稳定 id `dsh-plugin-project-memory`，不会改写 Harness 源码。安装后重启 `dsh web`（或重启 DSH 应用），插件在宿主启动时加载。
@@ -66,7 +66,7 @@ dsh plugin --profile web add "file:$PWD"
 
 同一项目的别名路径共享记忆，不同的同名目录保持隔离。动作如下：
 
-- `read`：返回完整 Markdown、内容 revision 和待维护流程。
+- `read`：直接以 Markdown 正文返回完整文档，正文前三行给出 `project:`、`revision:`、`directory:`（有流程待维护时再加维护 revision 与流程 ID），不套 JSON；其余动作仍返回 JSON。
 - `write`：在 `baseRevision` 仍然匹配时替换完整文档。
 - `forget`：在同一 revision 校验下替换文档，用于删除过时事实。
 - `observe_process`：仅在流程及最终检查真实完成后记录一次流程观察。

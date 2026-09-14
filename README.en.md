@@ -34,7 +34,7 @@ plugin is plain JavaScript with no `prepare` build script, so no `allowBuilds`
 authorization prompt appears either. To pin a released version, use the tag:
 
 ```sh
-dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory#v0.2.1
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory#v0.2.2
 ```
 
 Use the same `DSH_HOME` for installation and every Harness launch. The host
@@ -93,8 +93,10 @@ choose a project path in tool arguments:
 Aliases of one checkout share memory, while unrelated same-name directories
 remain isolated. Actions:
 
-- `read`: return the complete Markdown document, its revision, and pending
-  maintenance processes.
+- `read`: render the complete Markdown document itself, headed by `project:`,
+  `revision:` and `directory:` lines (plus the maintenance revision and pending
+  process IDs when maintenance is due), without a JSON envelope; the other
+  actions still render JSON.
 - `write`: replace the complete document when `baseRevision` still matches.
 - `forget`: replace the document under the same revision check to remove
   obsolete facts.

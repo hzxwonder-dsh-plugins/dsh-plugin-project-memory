@@ -104,6 +104,26 @@ function credentialRecordId(projectId, key) {
   return `project-${projectId}-${keyHash}`
 }
 
+/**
+ * Render a read as the Markdown document itself, headed by the identity and
+ * revision a follow-up `write` or `forget` must pass back. The other actions
+ * answer with the JSON envelope because their fields are flags, not prose.
+ */
+export function renderMemoryResult(args, value) {
+  if (args.action !== 'read') return [{ type: 'text', text: JSON.stringify(value, null, 2) }]
+  const lines = [
+    `project: ${value.projectId}`,
+    `revision: ${value.revision}`,
+    `directory: ${value.directory}`,
+  ]
+  const pending = value.maintenance?.pendingProcesses ?? []
+  if (pending.length > 0) {
+    lines.push(`maintenance revision: ${value.maintenance.revision}`)
+    lines.push(`pending processes: ${pending.map(entry => `"${entry.processId}"`).join(', ')}`)
+  }
+  return [{ type: 'text', text: `${lines.join('\n')}\n\n${value.content}` }]
+}
+
 export function createMemoryTool(ctx, store) {
   return defineTool({
     name: 'memory',
@@ -120,7 +140,7 @@ export function createMemoryTool(ctx, store) {
     },
     output: {
       schema: MEMORY_OUTPUT_SCHEMA,
-      render: (_args, value) => [{ type: 'text', text: JSON.stringify(value, null, 2) }],
+      render: renderMemoryResult,
     },
     isConcurrencySafe: args => args.action === 'read',
     async execute(args, exec) {

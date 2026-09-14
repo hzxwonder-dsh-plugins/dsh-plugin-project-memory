@@ -20,7 +20,10 @@ project and turn identity. Model arguments cannot select either identity.
 ## Knowledge contract
 
 The initial `memory.md` is `# Project memory` followed by a blank line. A read
-returns the exact content and its SHA-256 revision. `write` and `forget`
+returns the exact content and its SHA-256 revision, and renders as that Markdown
+document itself, preceded by `project:`, `revision:` and `directory:` lines (plus
+the maintenance revision and pending process IDs when maintenance is due). The
+other actions render their JSON envelope because their fields are flags. `write` and `forget`
 replace the complete document only when `baseRevision` matches. Content is at
 most 64 KiB, contains no NUL, and must pass the secret-pattern guard.
 

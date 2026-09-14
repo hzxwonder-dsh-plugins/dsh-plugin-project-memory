@@ -7,7 +7,9 @@ contracts; release validation should also execute these user-path scenarios.
 ## E2E-MEM-01: Project continuity and isolation
 
 1. Start DSH with the bundle and a temporary `DSH_HOME` in project A.
-2. Ask the agent to read memory, save a verified test command, and read again.
+2. Ask the agent to read memory, save a verified test command, and read again;
+   confirm each read renders as the Markdown document headed by `project:`,
+   `revision:` and `directory:` lines rather than a JSON envelope.
 3. Start a new Session in an alias of project A and confirm the command exists.
 4. Start a Session in a different same-name directory and confirm its memory
    contains only the initial heading.
