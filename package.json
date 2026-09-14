@@ -29,7 +29,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hzxwonder-dsh-plugins/dsh-plugin-memory.git"
+    "url": "git+https://github.com/hzxwonder-dsh-plugins/dsh-plugin-project-memory.git"
   },
   "keywords": [
     "deepseek-harness",

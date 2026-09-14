@@ -13,26 +13,26 @@
 一行命令（把 `web` 换成你自己的 profile 名）：
 
 ```sh
-dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory
 ```
 
 这一条命令会自己完成安装：profile 不存在时先初始化，然后用 pnpm 拉取仓库并安装依赖，最后因为包在自己的 `package.json` 里声明了 `dsh.bundle.patch`，自动把这个插件加入 `dsh.profile.bundles`，不需要手工编辑 profile。插件是纯 JavaScript、没有 `prepare` 构建脚本，所以也不会出现需要写进 `allowBuilds` 的构建脚本授权提示。需要固定版本时改用 tag：
 
 ```sh
-dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory#v0.2.0
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory#v0.2.0
 ```
 
 安装与每次启动 Harness 时使用同一个 `DSH_HOME`；宿主 profile 需要提供 `tools`、`credentials`、`sessionProjections`、`sandboxPolicy` 和 `systemPrompt` 服务。插件补丁只插入稳定 id `dsh-plugin-project-memory`，不会改写 Harness 源码。安装后重启 `dsh web`（或重启 DSH 应用），插件在宿主启动时加载。
 
-仓库名仍是 `dsh-plugin-memory`，安装后的包名是 `dsh-plugin-project-memory`；本插件尚未发布到 npm，npm 上无 scope 的 `dsh-plugin-memory` 属于另一位作者，与本仓库无关。
+本插件尚未发布到 npm；npm 上无 scope 的 `dsh-plugin-memory` 属于另一位作者的项目，与本仓库无关。
 
 改名同时改变了凭据记录的作用域（`<scope>/project-<projectId>-<keyHash>`），旧作用域下已写入的凭据需要用 `secret_set` 重新写入一次；项目记忆按规范化项目路径隔离，不受改名影响。
 
 本地开发时改用 `file:`：
 
 ```sh
-git clone https://github.com/hzxwonder-dsh-plugins/dsh-plugin-memory.git
-cd dsh-plugin-memory
+git clone https://github.com/hzxwonder-dsh-plugins/dsh-plugin-project-memory.git
+cd dsh-plugin-project-memory
 npm ci
 dsh plugin --profile web add "file:$PWD"
 ```

@@ -23,7 +23,7 @@ and validation boundaries.
 One command (replace `web` with your profile name):
 
 ```sh
-dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory
 ```
 
 That single command initializes the profile when it does not exist yet, fetches
@@ -34,7 +34,7 @@ plugin is plain JavaScript with no `prepare` build script, so no `allowBuilds`
 authorization prompt appears either. To pin a released version, use the tag:
 
 ```sh
-dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory#v0.2.0
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory#v0.2.0
 ```
 
 Use the same `DSH_HOME` for installation and every Harness launch. The host
@@ -43,10 +43,8 @@ profile must provide `tools`, `credentials`, `sessionProjections`,
 `dsh-plugin-project-memory` entry and does not modify Harness source. Restart `dsh web`
 (or the DSH app) afterwards; the host loads plugins at startup.
 
-The repository is still named `dsh-plugin-memory` while the installed package
-is `dsh-plugin-project-memory`. This plugin is not published to npm; the
-unscoped `dsh-plugin-memory` there belongs to another author and is unrelated to
-this repository.
+This plugin is not published to npm; the unscoped `dsh-plugin-memory` package
+there belongs to another author's project and is unrelated to this repository.
 
 The rename also changes the credential record scope
 (`<scope>/project-<projectId>-<keyHash>`): a credential written under the
@@ -56,8 +54,8 @@ keyed by the normalized project path, so it is unaffected.
 For local development use `file:` instead:
 
 ```sh
-git clone https://github.com/hzxwonder-dsh-plugins/dsh-plugin-memory.git
-cd dsh-plugin-memory
+git clone https://github.com/hzxwonder-dsh-plugins/dsh-plugin-project-memory.git
+cd dsh-plugin-project-memory
 npm ci
 dsh plugin --profile web add "file:$PWD"
 ```
