@@ -31,11 +31,10 @@ the repository with pnpm, installs its dependencies, and — because the package
 declares `dsh.bundle.patch` in its own `package.json` — adds the plugin to
 `dsh.profile.bundles` automatically, so no manual profile edit is needed. The
 plugin is plain JavaScript with no `prepare` build script, so no `allowBuilds`
-authorization prompt appears either. To pin a version, replace the branch with a
-specific commit (this repository has no tags yet):
+authorization prompt appears either. To pin a released version, use the tag:
 
 ```sh
-dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory#<commit>
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory#v0.1.0
 ```
 
 Use the same `DSH_HOME` for installation and every Harness launch. The host

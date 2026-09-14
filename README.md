@@ -16,10 +16,10 @@
 dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory
 ```
 
-这一条命令会自己完成安装：profile 不存在时先初始化，然后用 pnpm 拉取仓库并安装依赖，最后因为包在自己的 `package.json` 里声明了 `dsh.bundle.patch`，自动把这个插件加入 `dsh.profile.bundles`，不需要手工编辑 profile。插件是纯 JavaScript、没有 `prepare` 构建脚本，所以也不会出现需要写进 `allowBuilds` 的构建脚本授权提示。需要固定到某个版本时，把分支换成具体的 commit（本仓库目前未打 tag）：
+这一条命令会自己完成安装：profile 不存在时先初始化，然后用 pnpm 拉取仓库并安装依赖，最后因为包在自己的 `package.json` 里声明了 `dsh.bundle.patch`，自动把这个插件加入 `dsh.profile.bundles`，不需要手工编辑 profile。插件是纯 JavaScript、没有 `prepare` 构建脚本，所以也不会出现需要写进 `allowBuilds` 的构建脚本授权提示。需要固定版本时改用 tag：
 
 ```sh
-dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory#<commit>
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory#v0.1.0
 ```
 
 安装与每次启动 Harness 时使用同一个 `DSH_HOME`；宿主 profile 需要提供 `tools`、`credentials`、`sessionProjections`、`sandboxPolicy` 和 `systemPrompt` 服务。插件补丁只插入稳定 id `dsh-plugin-memory`，不会改写 Harness 源码。安装后重启 `dsh web`（或重启 DSH 应用），插件在宿主启动时加载。
