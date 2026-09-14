@@ -54,8 +54,11 @@ The plugin contributes to the DSH system prompt through `ctx.inject` when the
 and no prompt text is added.
 
 - A static section named `tool:memory` at order `2950` carries the standing
-  usage policy: when reading pays off, what deserves a write, that `write` and
-  `forget` replace the whole document with revision CAS, that credentials never
+  usage policy: when reading pays off, what deserves a write and what does not
+  (transient status, one-off debugging output, restatements of the current
+  task, facts the repository already records, or a rephrasing of an existing
+  line), that `write` and `forget` replace the whole document with revision
+  CAS, that credentials never
   belong in the document, and that a procedure observed in two distinct turns
   must be documented. The text is static so the cached prompt prefix stays
   stable across steps.

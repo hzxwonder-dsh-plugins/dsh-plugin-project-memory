@@ -19,7 +19,7 @@ dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-mem
 这一条命令会自己完成安装：profile 不存在时先初始化，然后用 pnpm 拉取仓库并安装依赖，最后因为包在自己的 `package.json` 里声明了 `dsh.bundle.patch`，自动把这个插件加入 `dsh.profile.bundles`，不需要手工编辑 profile。插件是纯 JavaScript、没有 `prepare` 构建脚本，所以也不会出现需要写进 `allowBuilds` 的构建脚本授权提示。需要固定版本时改用 tag：
 
 ```sh
-dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory#v0.2.0
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory#v0.2.1
 ```
 
 安装与每次启动 Harness 时使用同一个 `DSH_HOME`；宿主 profile 需要提供 `tools`、`credentials`、`sessionProjections`、`sandboxPolicy` 和 `systemPrompt` 服务。插件补丁只插入稳定 id `dsh-plugin-project-memory`，不会改写 Harness 源码。安装后重启 `dsh web`（或重启 DSH 应用），插件在宿主启动时加载。
@@ -77,7 +77,7 @@ dsh plugin --profile web add "file:$PWD"
 
 插件在 `systemPrompt` 服务可用时注入两份内容，不需要用户主动唤醒记忆功能：
 
-- **静态使用策略**（section `tool:memory`，order `2950`）：告诉 agent 何时该读、什么样的信息值得写、`write`/`forget` 是整篇替换加 revision CAS、过时内容应改写或删除而不是追加重复、凭据不得写入文档，以及「同一流程在两个不同 turn 被观察到就必须补文档」。文本静态，保证系统提示词前缀可缓存。
+- **静态使用策略**（section `tool:memory`，order `2950`）：告诉 agent 何时该读、什么样的信息值得写、什么不值得写（临时状态、一次性调试输出、复述当前任务、仓库里已有的事实、对现有行的换词）、`write`/`forget` 是整篇替换加 revision CAS、过时内容应改写或删除而不是追加重复、凭据不得写入文档，以及「同一流程在两个不同 turn 被观察到就必须补文档」。文本静态，保证系统提示词前缀可缓存。
 - **动态项目状态**（context `memory:project`，order `130`）：每个模型步骤读取当前项目状态。已有文档时给出一行 revision 与大小；出现待维护流程时直接给出维护指令（pending 流程 ID、知识 revision、维护 revision 和需要提交的 `acknowledgedProcesses`），agent 据此立即补写步骤并清除 pending。
 
 因此 agent 会自动决定读写时机：读到相关事实就更新或删除过时内容，重复两次的流程会被提示补写成 `## Procedures`。用户也可以在对话中直接说「请把这条存进 memory」「忘掉某某」，策略要求在同一 turn 内执行。

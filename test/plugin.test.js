@@ -212,7 +212,7 @@ test('prompt contributions carry the standing policy and a per-project context',
   const section = f.prompt.sections.get('tool:memory')
   assert.equal(section.order, 2950)
   assert.equal(typeof section.text, 'string')
-  for (const expected of ['action: read', 'action: write', 'forget', 'observe_process', 'memory_credentials', 'maintenanceRevision']) {
+  for (const expected of ['action: read', 'action: write', 'nothing durable changed', 'forget', 'observe_process', 'memory_credentials', 'maintenanceRevision']) {
     assert.match(section.text, new RegExp(expected))
   }
   assert.equal(section.complete, undefined)

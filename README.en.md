@@ -34,7 +34,7 @@ plugin is plain JavaScript with no `prepare` build script, so no `allowBuilds`
 authorization prompt appears either. To pin a released version, use the tag:
 
 ```sh
-dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory#v0.2.0
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory#v0.2.1
 ```
 
 Use the same `DSH_HOME` for installation and every Harness launch. The host
@@ -112,7 +112,9 @@ When the `systemPrompt` service is available the plugin contributes two prompt
 inputs, so the user never has to activate memory:
 
 - A static section named `tool:memory` at order `2950` states the standing
-  policy: when reading pays off, what deserves a write, that `write` and
+  policy: when reading pays off, what deserves a write and what does not
+  (transient status, one-off debugging output, restatements of the current
+  task, and facts the repository already records), that `write` and
   `forget` replace the whole document under revision CAS, that stale lines must
   be corrected or deleted rather than duplicated, that credentials stay out of
   the document, and that a procedure observed in two distinct turns must be
