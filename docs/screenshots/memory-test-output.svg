@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+  <title id="title">dsh-plugin-memory test evidence</title>
+  <desc id="desc">Actual npm test output for dsh-plugin-memory, with fourteen passing tests.</desc>
+  <rect width="1280" height="760" fill="#111318"/>
+  <rect x="0" y="0" width="1280" height="54" fill="#20242c"/>
+  <circle cx="28" cy="27" r="7" fill="#ff5f57"/>
+  <circle cx="52" cy="27" r="7" fill="#febc2e"/>
+  <circle cx="76" cy="27" r="7" fill="#28c840"/>
+  <text x="108" y="34" fill="#d7dce5" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">dsh-plugin-memory · npm test</text>
+  <text x="40" y="92" fill="#86a8ff" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">$ npm test</text>
+  <text x="40" y="126" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">✔ canonical paths share memory while unrelated same-name projects stay isolated</text>
+  <text x="40" y="156" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">✔ knowledge writes enforce revision CAS, secret guards, and the 64 KiB bound</text>
+  <text x="40" y="186" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">✔ two concurrent writers sharing one revision cannot both commit</text>
+  <text x="40" y="216" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">✔ managed symlinks and multi-link files are rejected without changing targets</text>
+  <text x="40" y="246" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">✔ repeat counters deduplicate host turns and acknowledgements require both revisions</text>
+  <text x="40" y="276" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">✔ an aborted call stops before creating project memory</text>
+  <text x="40" y="306" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">✔ bundle exports the DSH Cordis contract and apply registers both tools</text>
+  <text x="40" y="336" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">✔ read-only policy permits reads and denies every memory and credential mutation</text>
+  <text x="40" y="366" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">✔ process observation requires an open host turn projection</text>
+  <text x="40" y="396" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">✔ credential set and status are project-namespaced and never retrieve values</text>
+  <text x="40" y="426" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">✔ credential rotation replaces the record and aborted calls do not write</text>
+  <text x="40" y="456" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="18">✔ credential validation rejects retrieval-shaped actions, bad names, and invalid values</text>
+  <line x1="40" y1="492" x2="1240" y2="492" stroke="#343a46"/>
+  <text x="40" y="532" fill="#d7dce5" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="20">ℹ tests 14</text>
+  <text x="40" y="564" fill="#8ee28e" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="20">ℹ pass 14</text>
+  <text x="40" y="596" fill="#d7dce5" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="20">ℹ fail 0</text>
+  <text x="40" y="646" fill="#99a2b3" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="16">Evidence rendered from the captured test output on 2026-09-12.</text>
+  <text x="40" y="680" fill="#99a2b3" font-family="SFMono-Regular,Menlo,Consolas,monospace" font-size="16">This is a verification report, not a graphical memory-panel screenshot.</text>
+</svg>
+
