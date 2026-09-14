@@ -1,3 +1,3 @@
 - insert:
-    - id: dsh-plugin-memory
-      name: dsh-plugin-memory
+    - id: dsh-plugin-project-memory
+      name: dsh-plugin-project-memory

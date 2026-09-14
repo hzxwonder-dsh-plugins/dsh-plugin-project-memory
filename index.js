@@ -3,7 +3,7 @@ import { credentialKey } from '@deepseek-ai/dsh-credentials'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { MemoryError, MemoryStore } from './store.js'
 
-export const name = 'dsh-plugin-memory'
+export const name = 'dsh-plugin-project-memory'
 export const inject = ['tools', 'credentials', 'sessionProjections', 'sandboxPolicy']
 
 const CREDENTIAL_ACTIONS = new Set(['secret_set', 'secret_status'])

@@ -1,6 +1,6 @@
 # DSH Memory 插件
 
-`dsh-plugin-memory` 为 DeepSeek Harness 提供按项目隔离的持久化知识，以及只写入、不可读取的项目凭据状态工具。它同时把记忆的使用策略和当前项目状态注入 system prompt，让 agent 自行判断何时读写，并自动提示维护重复出现的流程。它是一个 ESM Cordis 插件，目标运行时为 Harness `0.1.5-rc.2`。
+`dsh-plugin-project-memory` 为 DeepSeek Harness 提供按项目隔离的持久化知识，以及只写入、不可读取的项目凭据状态工具。它同时把记忆的使用策略和当前项目状态注入 system prompt，让 agent 自行判断何时读写，并自动提示维护重复出现的流程。它是一个 ESM Cordis 插件，目标运行时为 Harness `0.1.5-rc.2`。
 
 ## 功能验证截图
 
@@ -19,12 +19,14 @@ dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory
 这一条命令会自己完成安装：profile 不存在时先初始化，然后用 pnpm 拉取仓库并安装依赖，最后因为包在自己的 `package.json` 里声明了 `dsh.bundle.patch`，自动把这个插件加入 `dsh.profile.bundles`，不需要手工编辑 profile。插件是纯 JavaScript、没有 `prepare` 构建脚本，所以也不会出现需要写进 `allowBuilds` 的构建脚本授权提示。需要固定版本时改用 tag：
 
 ```sh
-dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory#v0.1.0
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory#v0.2.0
 ```
 
-安装与每次启动 Harness 时使用同一个 `DSH_HOME`；宿主 profile 需要提供 `tools`、`credentials`、`sessionProjections`、`sandboxPolicy` 和 `systemPrompt` 服务。插件补丁只插入稳定 id `dsh-plugin-memory`，不会改写 Harness 源码。安装后重启 `dsh web`（或重启 DSH 应用），插件在宿主启动时加载。
+安装与每次启动 Harness 时使用同一个 `DSH_HOME`；宿主 profile 需要提供 `tools`、`credentials`、`sessionProjections`、`sandboxPolicy` 和 `systemPrompt` 服务。插件补丁只插入稳定 id `dsh-plugin-project-memory`，不会改写 Harness 源码。安装后重启 `dsh web`（或重启 DSH 应用），插件在宿主启动时加载。
 
-**不要**安装 npm 上的同名包：`dsh-plugin-memory` 这个名字已被另一位作者的项目占用，`dsh plugin add dsh-plugin-memory` 装到的不是本仓库。
+仓库名仍是 `dsh-plugin-memory`，安装后的包名是 `dsh-plugin-project-memory`；本插件尚未发布到 npm，npm 上无 scope 的 `dsh-plugin-memory` 属于另一位作者，与本仓库无关。
+
+改名同时改变了凭据记录的作用域（`<scope>/project-<projectId>-<keyHash>`），旧作用域下已写入的凭据需要用 `secret_set` 重新写入一次；项目记忆按规范化项目路径隔离，不受改名影响。
 
 本地开发时改用 `file:`：
 

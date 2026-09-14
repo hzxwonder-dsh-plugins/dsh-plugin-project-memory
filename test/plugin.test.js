@@ -87,7 +87,7 @@ async function fixture(t) {
 
 test('bundle exports the DSH Cordis contract and apply registers both defineTool definitions', async t => {
   const f = await fixture(t)
-  assert.equal(name, 'dsh-plugin-memory')
+  assert.equal(name, 'dsh-plugin-project-memory')
   assert.deepEqual(inject, ['tools', 'credentials', 'sessionProjections', 'sandboxPolicy'])
   assert.deepEqual([...f.tools.keys()], ['memory', 'memory_credentials'])
   assert.equal(f.tools.get('memory').parameters.properties.action.enum.includes('observe_process'), true)
@@ -165,7 +165,7 @@ test('credential set and status are project-namespaced and never retrieve or ret
   )
   assert.equal(f.records.size, 1)
   const [recordKey] = f.records.keys()
-  assert.match(recordKey, /^dsh-plugin-memory\/project-[a-f0-9]{64}-[a-f0-9]{64}$/)
+  assert.match(recordKey, /^dsh-plugin-project-memory\/project-[a-f0-9]{64}-[a-f0-9]{64}$/)
   assert.equal(f.records.get(recordKey).key, canary)
   assert.deepEqual(f.credentialCalls.map(call => call.method), [
     'modifyRecord',

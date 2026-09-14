@@ -8,7 +8,7 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)))
 
 test('package is a public DSH bundle pinned to the inspected release candidate', async () => {
   const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
-  assert.equal(manifest.name, 'dsh-plugin-memory')
+  assert.equal(manifest.name, 'dsh-plugin-project-memory')
   assert.equal(manifest.publishConfig.access, 'public')
   assert.equal(manifest.type, 'module')
   assert.equal(manifest.license, 'LGPL-3.0-or-later')
@@ -23,5 +23,5 @@ test('package is a public DSH bundle pinned to the inspected release candidate',
 
 test('bundle patch inserts the package under its stable id', async () => {
   const patch = await readFile(join(root, 'cordis.patch.yml'), 'utf8')
-  assert.match(patch, /^- insert:\n    - id: dsh-plugin-memory\n      name: dsh-plugin-memory\n+$/)
+  assert.match(patch, /^- insert:\n    - id: dsh-plugin-project-memory\n      name: dsh-plugin-project-memory\n+$/)
 })

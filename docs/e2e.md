@@ -1,6 +1,6 @@
 # End-to-End Test Plan
 
-These scenarios validate a packaged `dsh-plugin-memory` bundle against a DSH
+These scenarios validate a packaged `dsh-plugin-project-memory` bundle against a DSH
 0.1.5-rc.2 host. Automated unit and integration tests cover the underlying
 contracts; release validation should also execute these user-path scenarios.
 

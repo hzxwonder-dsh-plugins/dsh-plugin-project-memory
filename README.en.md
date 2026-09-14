@@ -1,6 +1,6 @@
 # DSH Memory Plugin
 
-`dsh-plugin-memory` provides project-scoped durable knowledge and write-only,
+`dsh-plugin-project-memory` provides project-scoped durable knowledge and write-only,
 non-retrievable credential status tools for DeepSeek Harness. It also injects
 the memory usage policy and the current project state into the system prompt so
 the agent decides on its own when to read or write, and is prompted to maintain
@@ -34,18 +34,24 @@ plugin is plain JavaScript with no `prepare` build script, so no `allowBuilds`
 authorization prompt appears either. To pin a released version, use the tag:
 
 ```sh
-dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory#v0.1.0
+dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-memory#v0.2.0
 ```
 
 Use the same `DSH_HOME` for installation and every Harness launch. The host
 profile must provide `tools`, `credentials`, `sessionProjections`,
 `sandboxPolicy`, and `systemPrompt`. The bundle patch inserts the stable
-`dsh-plugin-memory` entry and does not modify Harness source. Restart `dsh web`
+`dsh-plugin-project-memory` entry and does not modify Harness source. Restart `dsh web`
 (or the DSH app) afterwards; the host loads plugins at startup.
 
-Do **not** install the npm package of the same name: `dsh-plugin-memory` is
-already taken by another author's project, so `dsh plugin add dsh-plugin-memory`
-would install something else.
+The repository is still named `dsh-plugin-memory` while the installed package
+is `dsh-plugin-project-memory`. This plugin is not published to npm; the
+unscoped `dsh-plugin-memory` there belongs to another author and is unrelated to
+this repository.
+
+The rename also changes the credential record scope
+(`<scope>/project-<projectId>-<keyHash>`): a credential written under the
+previous scope needs one `secret_set` call under the new name. Project memory is
+keyed by the normalized project path, so it is unaffected.
 
 For local development use `file:` instead:
 
