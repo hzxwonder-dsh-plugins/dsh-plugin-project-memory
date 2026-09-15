@@ -2,6 +2,15 @@
 
 `dsh-plugin-project-memory` 为 DeepSeek Harness 提供按项目隔离的持久化知识，以及只写入、不可读取的项目凭据状态工具。它同时把记忆的使用策略和当前项目状态注入 system prompt，让 agent 自行判断何时读写，并自动提示维护重复出现的流程。它是一个 ESM Cordis 插件，目标运行时为 Harness `0.1.5-rc.2`。
 
+## 宿主支持
+
+本插件同时用于 Harness Web（`dsh web` 的浏览器客户端）和 DSH Desktop（Electron 壳），两端共用同一个包 `dsh-plugin-project-memory`，没有桌面端专用包，也没有需要单独维护的桌面端仓库；两端由本仓库的同一份实现维护。
+
+- 记忆文档按项目路径（`cwd` 的 realpath）隔离存放，位置由宿主提供的插件数据目录决定；Web 端与 Desktop 端各用各自的 home，互不影响。
+- 客户端面只用官方 slot 与 `defineTool` 注册，不把宿主专属能力放进顶层 `inject`；规范见 [DSH Desktop 插件开发文档](https://github.com/anywhere-labs/dsh-desktop/blob/master/docs/plugin-development.md)。
+- 包显式导出 `./package.json`：DSH Desktop 的宿主在 Electron Utility 进程里通过 Node loader 的 fallback 路径解析客户端入口，未声明该导出时客户端入口会被静默跳过；普通 Web 宿主不受影响。
+- 验证状态：`npm test` 18 项通过；桌面端已确认插件加载与客户端入口可用，记忆界面交互未在桌面端逐项验证。
+
 ## 功能验证截图
 
 ![memory 插件测试证据](docs/screenshots/memory-test-output.svg)

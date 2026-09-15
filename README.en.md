@@ -7,6 +7,27 @@ the agent decides on its own when to read or write, and is prompted to maintain
 procedures that repeat. It is an ESM Cordis plugin targeting Harness
 `0.1.5-rc.2`.
 
+## Host support
+
+Harness Web (the `dsh web` browser client) and DSH Desktop (the Electron shell)
+load the same package, `dsh-plugin-project-memory`; there is no desktop-only
+package and no separate desktop repository to maintain, so this repository's one
+implementation covers both hosts.
+
+- Memory documents are isolated by project path (the realpath of `cwd`) and
+  stored in the plugin data directory the host provides, so Web and Desktop each
+  use their own home and stay independent.
+- The client surface registers only through official slots and `defineTool`, and
+  host-specific capabilities stay out of the top-level `inject`; see the
+  [DSH Desktop plugin development guide](https://github.com/anywhere-labs/dsh-desktop/blob/master/docs/plugin-development.md).
+- The package exports `./package.json` explicitly: the DSH Desktop host resolves
+  the client entry through the Node loader fallback path inside its Electron
+  Utility process, and silently skips that entry without the export; ordinary
+  Web hosts are unaffected.
+- Verification: `npm test` passes 18 cases; on the desktop side plugin loading
+  and the client entry are confirmed, while memory-panel interactions were not
+  verified item by item.
+
 ## Verification screenshot
 
 ![Memory plugin test evidence](docs/screenshots/memory-test-output.svg)
