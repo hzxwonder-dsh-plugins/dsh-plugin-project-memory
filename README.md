@@ -138,4 +138,4 @@ npm run pack:check
 
 ## 许可证与来源
 
-LGPL-3.0-or-later。实现源自 PI-Desktop 的 `pi.memory` 行为并适配 DSH 官方服务；归属信息见 [`NOTICE`](NOTICE)，依赖项保留各自许可证。
+LGPL-3.0-or-later。
