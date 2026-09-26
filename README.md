@@ -4,12 +4,22 @@
 
 ## 宿主支持
 
-本插件同时用于 Harness Web（`dsh web` 的浏览器客户端）和 DSH Desktop（Electron 壳），两端共用同一个包 `dsh-plugin-project-memory`，没有桌面端专用包，也没有需要单独维护的桌面端仓库；两端由本仓库的同一份实现维护。
+本仓库维护 [DeepSeek 官方 Desktop](https://github.com/deepseek-ai/deepseek-harness) 的独立适配插件。
+[DSH Omni](https://github.com/hzxwonder/dsh-omni) 的集成版由其 `vendor/` 单独维护。维护目标为这两个桌面产品，Web 端不再作为维护目标。
 
-- 记忆文档按项目路径（`cwd` 的 realpath）隔离存放，位置由宿主提供的插件数据目录决定；Web 端与 Desktop 端各用各自的 home，互不影响。
-- 客户端面只用官方 slot 与 `defineTool` 注册，不把宿主专属能力放进顶层 `inject`；规范见 [DSH Desktop 插件开发文档](https://github.com/anywhere-labs/dsh-desktop/blob/master/docs/plugin-development.md)。
-- 包显式导出 `./package.json`：DSH Desktop 的宿主在 Electron Utility 进程里通过 Node loader 的 fallback 路径解析客户端入口，未声明该导出时客户端入口会被静默跳过；普通 Web 宿主不受影响。
-- 验证状态：`npm test` 18 项通过；桌面端已确认插件加载与客户端入口可用，记忆界面交互未在桌面端逐项验证。
+### 官方 Desktop 验收
+
+2026-09-26，macOS arm64，官方签名的 DeepSeek Harness **0.1.7-rc.2**，通过应用插件管理页安装公开版本 **0.2.2**：官方安装器拒绝：credentials、sandbox-policy、session-projection、tools 依赖固定为 0.1.5-rc.2。
+
+官方具备 AGENTS.md、skills 与会话持久化；本插件增加项目路径隔离记忆、版本校验写入、流程记忆及凭据工具。
+
+[完整验收与官方功能对照](https://github.com/hzxwonder/dsh-omni/blob/main/docs/official-desktop-compatibility.md)。安装成功、组件运行与核心功能验收是不同阶段；兼容范围以实机报告为准。
+
+开发与发布顺序：DSH Omni 开发及实机验收 → 更新 Omni 仓库 → 官方 Desktop 适配及实机验收 → 发布本仓库。每次重新构建后重新实机验证。
+
+### 安装到官方 Desktop
+
+在官方应用中打开“插件 → 添加插件”，输入 `https://github.com/hzxwonder-dsh-plugins/dsh-plugin-project-memory`。安装器通过兼容性检查后再启用；按照上面的验收状态决定是否在日常配置使用。
 
 ## 功能验证截图
 
