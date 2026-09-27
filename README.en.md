@@ -32,6 +32,10 @@ One command (replace `web` with your profile name):
 
 ```sh
 dsh plugin --profile web add github:hzxwonder-dsh-plugins/dsh-plugin-project-memory
+
+### Distribution
+
+This repository is the public adapter for the official DeepSeek Harness Desktop. [DSH Omni](https://github.com/hzxwonder/dsh-omni) integrates its pinned `vendor/dsh-plugin-project-memory` snapshot. The two editions share project-memory behavior but are validated against their hosts independently; Web is no longer a maintenance target. See the [compatibility report](https://github.com/hzxwonder/dsh-omni/blob/main/docs/official-desktop-compatibility.md) for the current official Desktop status.
 ```
 
 That single command initializes the profile when it does not exist yet, fetches

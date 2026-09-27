@@ -21,6 +21,10 @@
 
 在官方应用中打开“插件 → 添加插件”，输入 `https://github.com/hzxwonder-dsh-plugins/dsh-plugin-project-memory`。安装器通过兼容性检查后再启用；按照上面的验收状态决定是否在日常配置使用。
 
+### 分发说明
+
+本仓库是官方 DeepSeek Harness Desktop 的公开适配版；[DSH Omni](https://github.com/hzxwonder/dsh-omni) 从 `vendor/dsh-plugin-project-memory` 的固定快照集成。两套版本共享项目记忆能力，但按各自宿主独立验收；Web 端不再作为维护目标。官方 Desktop 的当前兼容性以 [报告](https://github.com/hzxwonder/dsh-omni/blob/main/docs/official-desktop-compatibility.md) 为准。
+
 ## 功能验证截图
 
 ![memory 插件测试证据](docs/screenshots/memory-test-output.svg)
@@ -148,4 +152,4 @@ npm run pack:check
 
 ## 许可证与来源
 
-LGPL-3.0-or-later。
+LGPL-3.0-or-later。实现源自 PI-Desktop 的 `pi.memory` 行为并适配 DSH 官方服务；归属信息见 [`NOTICE`](NOTICE)，依赖项保留各自许可证。
